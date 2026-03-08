@@ -1,0 +1,12 @@
+# Environment variables
+.env
+.env.example
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
+
+# Dependencies and generated output
+node_modules/
+dist/
