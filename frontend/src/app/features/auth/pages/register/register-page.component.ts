@@ -1,53 +1,76 @@
-import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
 import { InputHintComponent } from '../../../../shared/components/input/input.component';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { AuthCardComponent } from '../../../../shared/components/auth-card/auth-card.component';
+import { ToastComponent } from '../../../../shared/components/toast/toast.component';
+
+const passwordMatchValidator: ValidatorFn = (control: AbstractControl) => {
+  const password = control.get('password')?.value;
+  const confirmPassword = control.get('confirmPassword')?.value;
+
+  if (!password || !confirmPassword) {
+    return null;
+  }
+
+  return password === confirmPassword ? null : { passwordMismatch: true };
+};
 
 @Component({
   selector: 'app-register-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, InputHintComponent, ButtonComponent],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    InputHintComponent,
+    ButtonComponent,
+    AuthCardComponent,
+    ToastComponent
+  ],
   template: `
-    <section class="mx-auto max-w-md px-4 py-16 sm:px-6">
-      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_20px_60px_-35px_rgba(15,23,42,0.35)] sm:p-8">
-        <h1 class="text-2xl font-bold text-slate-900">Create your account</h1>
-        <p class="mt-2 text-sm text-slate-600">Start generating professional letters with AI.</p>
+    <ui-auth-card
+      title="Create your account"
+      subtitle="Start generating premium cover letters in a few clicks."
+    >
+      <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
+        <div>
+          <label for="name" class="ui-label">Full name</label>
+          <input id="name" formControlName="name" type="text" autocomplete="name" class="ui-input" placeholder="Alex Johnson" />
+          <ui-input-hint [error]="nameError()" />
+        </div>
 
-        <form [formGroup]="form" (ngSubmit)="submit()" class="mt-6 space-y-4">
-          <div>
-            <label class="mb-1 block text-sm font-medium text-slate-700">Name</label>
-            <input formControlName="name" type="text" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none ring-emerald-500 focus:ring-2" />
-            <ui-input-hint [error]="nameError()" />
-          </div>
+        <div>
+          <label for="email" class="ui-label">Email</label>
+          <input id="email" formControlName="email" type="email" autocomplete="email" class="ui-input" placeholder="you@company.com" />
+          <ui-input-hint [error]="emailError()" />
+        </div>
 
+        <div class="grid gap-4 sm:grid-cols-2">
           <div>
-            <label class="mb-1 block text-sm font-medium text-slate-700">Email</label>
-            <input formControlName="email" type="email" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none ring-emerald-500 focus:ring-2" />
-            <ui-input-hint [error]="emailError()" />
-          </div>
-
-          <div>
-            <label class="mb-1 block text-sm font-medium text-slate-700">Password</label>
-            <input formControlName="password" type="password" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none ring-emerald-500 focus:ring-2" />
+            <label for="password" class="ui-label">Password</label>
+            <input id="password" formControlName="password" type="password" autocomplete="new-password" class="ui-input" placeholder="At least 8 characters" />
             <ui-input-hint [error]="passwordError()" />
           </div>
 
-          @if (error()) {
-            <p class="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{{ error() }}</p>
-          }
+          <div>
+            <label for="confirmPassword" class="ui-label">Confirm password</label>
+            <input id="confirmPassword" formControlName="confirmPassword" type="password" autocomplete="new-password" class="ui-input" placeholder="Repeat password" />
+            <ui-input-hint [error]="confirmPasswordError()" />
+          </div>
+        </div>
 
-          <ui-button [loading]="loading()" type="submit" class="w-full">Create account</ui-button>
-        </form>
+        <ui-toast [message]="error()" variant="error" />
 
-        <p class="mt-4 text-sm text-slate-600">
-          Already have an account?
-          <a routerLink="/login" class="font-semibold text-emerald-700">Login</a>
-        </p>
-      </div>
-    </section>
+        <ui-button [loading]="loading()" type="submit" size="lg" class="w-full">Create account</ui-button>
+      </form>
+
+      <p class="mt-6 text-sm text-slate-600">
+        Already have an account?
+        <a routerLink="/login" class="font-semibold text-blue-700 hover:text-blue-600">Login</a>
+      </p>
+    </ui-auth-card>
   `
 })
 export class RegisterPageComponent {
@@ -58,11 +81,15 @@ export class RegisterPageComponent {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
 
-  readonly form = this.fb.nonNullable.group({
-    name: ['', [Validators.required, Validators.minLength(2)]],
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(8)]]
-  });
+  readonly form = this.fb.nonNullable.group(
+    {
+      name: ['', [Validators.required, Validators.minLength(2)]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(8)]],
+      confirmPassword: ['', [Validators.required, Validators.minLength(8)]]
+    },
+    { validators: [passwordMatchValidator] }
+  );
 
   nameError(): string | null {
     const control = this.form.controls.name;
@@ -88,6 +115,14 @@ export class RegisterPageComponent {
     return null;
   }
 
+  confirmPasswordError(): string | null {
+    const control = this.form.controls.confirmPassword;
+    if (!control.touched && !this.form.touched) return null;
+    if (control.errors?.['required']) return 'Confirm password is required';
+    if (this.form.errors?.['passwordMismatch']) return 'Passwords do not match';
+    return null;
+  }
+
   submit(): void {
     if (this.form.invalid || this.loading()) {
       this.form.markAllAsTouched();
@@ -97,7 +132,9 @@ export class RegisterPageComponent {
     this.loading.set(true);
     this.error.set(null);
 
-    this.authService.register(this.form.getRawValue()).subscribe({
+    const { name, email, password } = this.form.getRawValue();
+
+    this.authService.register({ name, email, password }).subscribe({
       next: () => {
         this.loading.set(false);
         void this.router.navigate(['/dashboard']);

@@ -1,47 +1,56 @@
-import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
 import { InputHintComponent } from '../../../../shared/components/input/input.component';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { AuthCardComponent } from '../../../../shared/components/auth-card/auth-card.component';
+import { ToastComponent } from '../../../../shared/components/toast/toast.component';
 
 @Component({
   selector: 'app-login-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, InputHintComponent, ButtonComponent],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    InputHintComponent,
+    ButtonComponent,
+    AuthCardComponent,
+    ToastComponent
+  ],
   template: `
-    <section class="mx-auto max-w-md px-4 py-16 sm:px-6">
-      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_20px_60px_-35px_rgba(15,23,42,0.35)] sm:p-8">
-        <h1 class="text-2xl font-bold text-slate-900">Welcome back</h1>
-        <p class="mt-2 text-sm text-slate-600">Login to continue generating cover letters.</p>
+    <ui-auth-card
+      title="Welcome back"
+      subtitle="Log in to continue generating tailored cover letters with AI."
+    >
+      <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
+        <div>
+          <label for="email" class="ui-label">Email</label>
+          <input id="email" formControlName="email" type="email" autocomplete="email" class="ui-input" placeholder="you@company.com" />
+          <ui-input-hint [error]="emailError()" />
+        </div>
 
-        <form [formGroup]="form" (ngSubmit)="submit()" class="mt-6 space-y-4">
-          <div>
-            <label class="mb-1 block text-sm font-medium text-slate-700">Email</label>
-            <input formControlName="email" type="email" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none ring-emerald-500 focus:ring-2" />
-            <ui-input-hint [error]="emailError()" />
+        <div>
+          <div class="mb-2 flex items-center justify-between">
+            <label for="password" class="ui-label mb-0">Password</label>
+            <a routerLink="/login" class="text-xs font-semibold text-blue-700 hover:text-blue-600">Forgot?</a>
           </div>
+          <input id="password" formControlName="password" type="password" autocomplete="current-password" class="ui-input" placeholder="Enter your password" />
+          <ui-input-hint [error]="passwordError()" />
+        </div>
 
-          <div>
-            <label class="mb-1 block text-sm font-medium text-slate-700">Password</label>
-            <input formControlName="password" type="password" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none ring-emerald-500 focus:ring-2" />
-            <ui-input-hint [error]="passwordError()" />
-          </div>
+        <ui-toast [message]="error()" variant="error" />
 
-          @if (error()) {
-            <p class="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{{ error() }}</p>
-          }
+        <ui-button [loading]="loading()" type="submit" size="lg" class="w-full">Login</ui-button>
+      </form>
 
-          <ui-button [loading]="loading()" type="submit" class="w-full">Login</ui-button>
-        </form>
+      <p class="ui-divider"><span>Social sign in coming soon</span></p>
 
-        <p class="mt-4 text-sm text-slate-600">
-          New here?
-          <a routerLink="/register" class="font-semibold text-emerald-700">Create an account</a>
-        </p>
-      </div>
-    </section>
+      <p class="text-sm text-slate-600">
+        New to CoverLetter AI?
+        <a routerLink="/register" class="font-semibold text-blue-700 hover:text-blue-600">Create an account</a>
+      </p>
+    </ui-auth-card>
   `
 })
 export class LoginPageComponent {

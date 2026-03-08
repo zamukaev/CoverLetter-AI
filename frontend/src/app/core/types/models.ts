@@ -13,6 +13,8 @@ export interface AuthResponse {
 export interface CoverLetter {
   id: string;
   userId: string;
+  jobTitle?: string;
+  companyName?: string;
   jobDescription: string;
   resumeText: string;
   generatedText: string;
@@ -22,6 +24,8 @@ export interface CoverLetter {
 }
 
 export interface GenerateCoverLetterPayload {
+  jobTitle?: string;
+  companyName?: string;
   jobDescription: string;
   resumeText: string;
   tone?: string;

@@ -4,60 +4,86 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CoverLetterService } from '../../../../core/services/cover-letter.service';
 import type { CoverLetter } from '../../../../core/types/models';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { ToastComponent } from '../../../../shared/components/toast/toast.component';
 
 @Component({
   selector: 'app-history-detail-page',
   standalone: true,
-  imports: [RouterLink, DatePipe, SpinnerComponent],
+  imports: [RouterLink, DatePipe, SpinnerComponent, ButtonComponent, PageHeaderComponent, ToastComponent],
   template: `
     <section>
-      <a routerLink="/history" class="text-sm font-semibold text-emerald-700">← Back to history</a>
+      <a routerLink="/history" class="mb-4 inline-flex text-sm font-semibold text-blue-700 hover:text-blue-600">Back to saved letters</a>
 
       @if (loading()) {
         <ui-spinner />
       } @else if (error()) {
-        <p class="mt-4 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700">{{ error() }}</p>
+        <p class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{{ error() }}</p>
       } @else if (letter()) {
-        <div class="mt-4 rounded-2xl border border-slate-200 bg-white p-6">
-          <div class="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <h1 class="text-2xl font-bold text-slate-900">Cover Letter Detail</h1>
-              <p class="mt-1 text-sm text-slate-500">Created: {{ letter()!.createdAt | date: 'medium' }}</p>
-            </div>
-            <div class="flex gap-2">
-              <button type="button" (click)="copyText()" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-100">Copy</button>
-              <button type="button" (click)="downloadText()" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-100">Download .txt</button>
-              <button type="button" (click)="saveUpdates()" class="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-500">Save changes</button>
-            </div>
+        <ui-page-header
+          eyebrow="Cover Letter"
+          title="Review and Edit"
+          subtitle="Make final improvements, then save, copy, or download your letter."
+        >
+          <div class="flex flex-wrap gap-2">
+            <ui-button size="sm" variant="secondary" (click)="copyText()">Copy</ui-button>
+            <ui-button size="sm" variant="secondary" (click)="downloadText()">Download TXT</ui-button>
+            <ui-button size="sm" variant="ghost" (click)="regeneratePlaceholder()">Regenerate (Coming Soon)</ui-button>
+            <ui-button size="sm" (click)="saveUpdates()">Save</ui-button>
           </div>
+        </ui-page-header>
 
-          <div class="mt-5 grid gap-4 md:grid-cols-2">
-            <div>
-              <h2 class="mb-2 text-sm font-semibold text-slate-700">Job Description</h2>
-              <p class="rounded-xl bg-slate-50 p-4 text-sm text-slate-700">{{ letter()!.jobDescription }}</p>
-            </div>
-            <div>
-              <h2 class="mb-2 text-sm font-semibold text-slate-700">Resume Text</h2>
-              <p class="rounded-xl bg-slate-50 p-4 text-sm text-slate-700">{{ letter()!.resumeText }}</p>
-            </div>
-          </div>
-
-          <div class="mt-5">
-            <h2 class="mb-2 text-sm font-semibold text-slate-700">Generated Letter (Editable)</h2>
+        <div class="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+          <article class="ui-surface p-6 sm:p-7">
+            <label for="generatedText" class="ui-label">Cover letter content (editable)</label>
             <textarea
+              id="generatedText"
               [value]="generatedText()"
               (input)="generatedText.set($any($event.target).value)"
-              rows="16"
-              class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm leading-6 outline-none ring-emerald-500 focus:ring-2"
+              rows="20"
+              class="ui-textarea"
             ></textarea>
-          </div>
+          </article>
 
-          @if (success()) {
-            <p class="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{{ success() }}</p>
-          }
-          @if (updateError()) {
-            <p class="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{{ updateError() }}</p>
-          }
+          <aside class="space-y-4">
+            <article class="ui-surface p-5 sm:p-6">
+              <h3 class="text-lg font-bold tracking-tight text-slate-900">Metadata</h3>
+              <dl class="mt-3 space-y-2 text-sm">
+                <div class="flex justify-between gap-3">
+                  <dt class="text-slate-500">Job title</dt>
+                  <dd class="text-right font-medium text-slate-800">{{ letter()!.jobTitle || deriveJobTitle(letter()!) }}</dd>
+                </div>
+                <div class="flex justify-between gap-3">
+                  <dt class="text-slate-500">Company</dt>
+                  <dd class="text-right font-medium text-slate-800">{{ letter()!.companyName || deriveCompany(letter()!) }}</dd>
+                </div>
+                <div class="flex justify-between gap-3">
+                  <dt class="text-slate-500">Tone</dt>
+                  <dd class="text-right font-medium capitalize text-slate-800">{{ letter()!.tone || 'professional' }}</dd>
+                </div>
+                <div class="flex justify-between gap-3">
+                  <dt class="text-slate-500">Created</dt>
+                  <dd class="text-right font-medium text-slate-800">{{ letter()!.createdAt | date: 'medium' }}</dd>
+                </div>
+                <div class="flex justify-between gap-3">
+                  <dt class="text-slate-500">Updated</dt>
+                  <dd class="text-right font-medium text-slate-800">{{ letter()!.updatedAt | date: 'medium' }}</dd>
+                </div>
+              </dl>
+            </article>
+
+            <article class="ui-surface p-5 sm:p-6">
+              <h3 class="text-lg font-bold tracking-tight text-slate-900">Source Details</h3>
+              <p class="mt-2 text-xs uppercase tracking-[0.14em] text-slate-400">Job description</p>
+              <p class="mt-2 text-sm leading-6 text-slate-600">{{ letter()!.jobDescription }}</p>
+            </article>
+          </aside>
+        </div>
+
+        <div class="mt-3 space-y-2">
+          <ui-toast [message]="success()" variant="success" />
+          <ui-toast [message]="updateError()" variant="error" />
         </div>
       }
     </section>
@@ -112,6 +138,10 @@ export class HistoryDetailPageComponent {
     this.success.set('Download started');
   }
 
+  regeneratePlaceholder(): void {
+    this.success.set('Regenerate options will be available soon');
+  }
+
   saveUpdates(): void {
     const id = this.letter()?.id;
     if (!id) return;
@@ -122,11 +152,21 @@ export class HistoryDetailPageComponent {
     this.coverLetterService.update(id, this.generatedText()).subscribe({
       next: (res) => {
         this.letter.set(res.coverLetter);
-        this.success.set('Cover letter updated');
+        this.success.set('Cover letter updated successfully');
       },
       error: (err: { error?: { message?: string } }) => {
         this.updateError.set(err.error?.message ?? 'Failed to update cover letter');
       }
     });
+  }
+
+  deriveJobTitle(letter: CoverLetter): string {
+    const beforeAt = letter.jobDescription.split(/\sat\s/i)[0]?.trim();
+    return beforeAt || 'Not specified';
+  }
+
+  deriveCompany(letter: CoverLetter): string {
+    const parts = letter.jobDescription.split(/\sat\s/i);
+    return parts[1]?.trim().slice(0, 40) || 'Not specified';
   }
 }

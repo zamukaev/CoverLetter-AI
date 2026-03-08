@@ -1,30 +1,55 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { PricingCardComponent } from '../../../../shared/components/pricing-card/pricing-card.component';
+import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { SectionContainerComponent } from '../../../../shared/components/section-container/section-container.component';
 
 @Component({
   selector: 'landing-pricing-section',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, PricingCardComponent, ButtonComponent, SectionContainerComponent],
   template: `
-    <section class="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
-      <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-[0_20px_60px_-35px_rgba(15,23,42,0.45)]">
-        <h2 class="text-3xl font-bold text-slate-900">Simple pricing</h2>
-        <p class="mt-2 text-slate-600">Start free and upgrade when needed.</p>
-        <div class="mt-8 grid gap-4 md:grid-cols-2">
-          <article class="rounded-2xl border border-slate-200 p-6">
-            <p class="text-sm font-semibold text-slate-500">Starter</p>
-            <p class="mt-3 text-3xl font-bold text-slate-900">$0</p>
-            <p class="mt-3 text-sm text-slate-600">Basic generation, editing, and history access.</p>
-          </article>
-          <article class="rounded-2xl border border-emerald-300 bg-emerald-50 p-6">
-            <p class="text-sm font-semibold text-emerald-700">Pro</p>
-            <p class="mt-3 text-3xl font-bold text-slate-900">$19<span class="text-base font-medium text-slate-500">/mo</span></p>
-            <p class="mt-3 text-sm text-slate-700">Priority generation and advanced tone controls.</p>
-            <a routerLink="/register" class="mt-5 inline-flex rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Start Pro Trial</a>
-          </article>
-        </div>
+    <ui-section-container>
+      <div class="mb-10 max-w-3xl">
+        <p class="ui-kicker">Pricing</p>
+        <h2 class="ui-title-lg">Simple pricing for every application stage</h2>
+        <p class="mt-3 text-sm leading-7 text-slate-600 sm:text-base">Start free, upgrade when you need more volume, speed, and advanced controls.</p>
       </div>
-    </section>
+
+      <div class="grid gap-5 lg:grid-cols-2">
+        <ui-pricing-card
+          plan="Free"
+          price="$0"
+          description="Ideal for getting started and applying to a few roles each month."
+          [features]="[
+            'Up to 5 cover letters per month',
+            'Full editor and tone selection',
+            'Save history plus copy and download'
+          ]"
+        >
+          <a routerLink="/register" class="block">
+            <ui-button variant="secondary" class="w-full">Choose Free</ui-button>
+          </a>
+        </ui-pricing-card>
+
+        <ui-pricing-card
+          plan="Pro"
+          price="$19/mo"
+          description="Built for active job seekers applying to many opportunities every week."
+          [features]="[
+            'Unlimited cover letters',
+            'Faster generation queue',
+            'Advanced tone and style controls',
+            'Priority customer support'
+          ]"
+          [featured]="true"
+        >
+          <a routerLink="/register" class="block">
+            <ui-button class="w-full">Start Pro</ui-button>
+          </a>
+        </ui-pricing-card>
+      </div>
+    </ui-section-container>
   `
 })
 export class PricingSectionComponent {}

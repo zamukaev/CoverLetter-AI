@@ -1,15 +1,13 @@
-import { CommonModule } from '@angular/common';
 import { Component, input } from '@angular/core';
 
 @Component({
   selector: 'ui-input-hint',
   standalone: true,
-  imports: [CommonModule],
   template: `
     @if (error()) {
-      <p class="mt-1 text-xs text-rose-600">{{ error() }}</p>
+      <p class="ui-error">{{ error() }}</p>
     } @else if (hint()) {
-      <p class="mt-1 text-xs text-slate-500">{{ hint() }}</p>
+      <p class="ui-help">{{ hint() }}</p>
     }
   `
 })

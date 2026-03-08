@@ -1,18 +1,29 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { SectionContainerComponent } from '../../../../shared/components/section-container/section-container.component';
 
 @Component({
   selector: 'landing-cta-section',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, ButtonComponent, SectionContainerComponent],
   template: `
-    <section class="mx-auto max-w-6xl px-4 pb-20 sm:px-6 lg:px-8">
-      <div class="rounded-3xl bg-slate-900 px-8 py-12 text-center text-white">
-        <h2 class="text-3xl font-bold">Ready to send better applications?</h2>
-        <p class="mt-3 text-slate-300">Create your first tailored cover letter in under two minutes.</p>
-        <a routerLink="/register" class="mt-6 inline-flex rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-900">Create Account</a>
+    <ui-section-container>
+      <div class="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-blue-900 px-6 py-12 text-center text-white shadow-[0_45px_100px_-58px_rgba(15,23,42,0.92)] sm:px-10 sm:py-14">
+        <h2 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Submit better applications with less effort</h2>
+        <p class="mx-auto mt-3 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+          Join professionals and students using CoverLetter AI to apply faster with clear, personalized cover letters.
+        </p>
+        <div class="mt-7 flex flex-wrap items-center justify-center gap-3">
+          <a routerLink="/register">
+            <ui-button size="lg">Get Started Free</ui-button>
+          </a>
+          <a routerLink="/login">
+            <ui-button variant="secondary" size="lg">Sign In</ui-button>
+          </a>
+        </div>
       </div>
-    </section>
+    </ui-section-container>
   `
 })
 export class CtaSectionComponent {}

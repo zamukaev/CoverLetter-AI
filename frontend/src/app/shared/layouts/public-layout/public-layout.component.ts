@@ -8,7 +8,7 @@ import { FooterComponent } from '../../components/footer/footer.component';
   standalone: true,
   imports: [RouterOutlet, NavbarComponent, FooterComponent],
   template: `
-    <div class="min-h-screen bg-[radial-gradient(circle_at_15%_10%,#e2f8f0_0%,transparent_38%),radial-gradient(circle_at_85%_4%,#f4f0ff_0%,transparent_30%),#f8fafc]">
+    <div class="min-h-screen bg-[radial-gradient(circle_at_0%_0%,#e7f0ff_0%,transparent_30%),radial-gradient(circle_at_100%_15%,#eef4ff_0%,transparent_32%),#f8fafc]">
       <app-navbar />
       <main>
         <router-outlet />

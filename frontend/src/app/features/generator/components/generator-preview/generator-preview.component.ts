@@ -1,23 +1,30 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ButtonComponent } from '../../../../shared/components/button/button.component';
 
 @Component({
   selector: 'generator-preview',
   standalone: true,
+  imports: [ButtonComponent],
   template: `
-    <div class="rounded-2xl border border-slate-200 bg-white p-5">
-      <div class="mb-3 flex items-center justify-between gap-3">
-        <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-500">Generated Letter</h3>
-        <div class="flex gap-2">
-          <button type="button" (click)="copy.emit()" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100">Copy</button>
-          <button type="button" (click)="download.emit()" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100">Download .txt</button>
-          <button type="button" (click)="save.emit()" class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500">Save</button>
+    <div class="ui-surface p-5 sm:p-6">
+      <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 class="text-sm font-bold uppercase tracking-[0.16em] text-slate-500">Generated Letter</h3>
+          <p class="mt-1 text-xs text-slate-500">Edit before saving or exporting</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <ui-button size="sm" variant="secondary" (click)="copy.emit()">Copy</ui-button>
+          <ui-button size="sm" variant="secondary" (click)="download.emit()">Download TXT</ui-button>
+          <ui-button size="sm" variant="ghost" (click)="regenerate.emit()">Regenerate (Soon)</ui-button>
+          <ui-button size="sm" (click)="save.emit()">Save</ui-button>
         </div>
       </div>
+
       <textarea
         [value]="text"
         (input)="textChange.emit(($any($event.target).value))"
-        rows="16"
-        class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm leading-6 outline-none ring-emerald-500 focus:ring-2"
+        rows="18"
+        class="ui-textarea"
       ></textarea>
     </div>
   `
@@ -28,4 +35,5 @@ export class GeneratorPreviewComponent {
   @Output() readonly copy = new EventEmitter<void>();
   @Output() readonly download = new EventEmitter<void>();
   @Output() readonly save = new EventEmitter<void>();
+  @Output() readonly regenerate = new EventEmitter<void>();
 }

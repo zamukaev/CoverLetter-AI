@@ -3,52 +3,89 @@ import { Router } from '@angular/router';
 import { CoverLetterService } from '../../../../core/services/cover-letter.service';
 import { GeneratorFormComponent } from '../../components/generator-form/generator-form.component';
 import { GeneratorPreviewComponent } from '../../components/generator-preview/generator-preview.component';
-import type { GenerateCoverLetterPayload, SaveCoverLetterPayload } from '../../../../core/types/models';
+import type {
+  GenerateCoverLetterPayload,
+  SaveCoverLetterPayload,
+} from '../../../../core/types/models';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { ToastComponent } from '../../../../shared/components/toast/toast.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 
 @Component({
   selector: 'app-generator-page',
   standalone: true,
-  imports: [GeneratorFormComponent, GeneratorPreviewComponent, SpinnerComponent],
+  imports: [
+    GeneratorFormComponent,
+    GeneratorPreviewComponent,
+    SpinnerComponent,
+    ToastComponent,
+    PageHeaderComponent,
+  ],
   template: `
-    <section class="grid gap-6 lg:grid-cols-2">
-      <div class="rounded-2xl border border-slate-200 bg-white p-6">
-        <h1 class="text-2xl font-bold text-slate-900">Cover Letter Generator</h1>
-        <p class="mt-2 text-sm text-slate-600">Paste job details and your resume, then generate a tailored letter.</p>
-        <div class="mt-5">
-          <generator-form (submitted)="onGenerate($event)" />
+    <section>
+      <ui-page-header
+        eyebrow="Generator"
+        title="Generate a tailored cover letter"
+        subtitle="Paste the role details and your resume context, then create a polished draft in seconds."
+      />
+
+      <div class="grid gap-6 xl:grid-cols-[1.03fr_0.97fr]">
+        <div class="space-y-5">
+          <article class="ui-surface p-6 sm:p-7">
+            <generator-form [loading]="loading()" (submitted)="onGenerate($event)" />
+          </article>
+
+          <article class="ui-surface p-6 sm:p-7">
+            <h3 class="text-lg font-bold tracking-tight text-slate-900">
+              Tips for stronger results
+            </h3>
+            <ul class="mt-4 space-y-2.5 text-sm text-slate-600">
+              <li class="ui-surface-soft px-3 py-2.5">
+                Include the full job description, not only the role title.
+              </li>
+              <li class="ui-surface-soft px-3 py-2.5">
+                Add measurable outcomes from your experience whenever possible.
+              </li>
+              <li class="ui-surface-soft px-3 py-2.5">
+                Try different tones and choose the version that fits the company best.
+              </li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="space-y-3">
+          @if (loading()) {
+            <div class="ui-surface p-7">
+              <ui-spinner />
+              <div class="mt-2 space-y-2">
+                <div class="ui-loading-line w-3/4"></div>
+                <div class="ui-loading-line w-2/3"></div>
+              </div>
+              <p class="mt-4 text-center text-sm text-slate-600">Generating your draft...</p>
+            </div>
+          } @else if (generatedText()) {
+            <generator-preview
+              [text]="generatedText()"
+              (textChange)="generatedText.set($event)"
+              (copy)="copyText()"
+              (download)="downloadText()"
+              (save)="saveLetter()"
+              (regenerate)="showRegeneratePlaceholder()"
+            />
+          } @else {
+            <div
+              class="ui-surface border-dashed bg-slate-50 p-10 text-center text-sm text-slate-600"
+            >
+              Your generated draft will appear here after you submit the form.
+            </div>
+          }
+
+          <ui-toast [message]="success()" variant="success" />
+          <ui-toast [message]="error()" variant="error" />
         </div>
       </div>
-
-      <div>
-        @if (loading()) {
-          <div class="rounded-2xl border border-slate-200 bg-white p-6">
-            <ui-spinner />
-            <p class="text-center text-sm text-slate-600">Generating your letter...</p>
-          </div>
-        } @else if (generatedText()) {
-          <generator-preview
-            [text]="generatedText()"
-            (textChange)="generatedText.set($event)"
-            (copy)="copyText()"
-            (download)="downloadText()"
-            (save)="saveLetter()"
-          />
-        } @else {
-          <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center text-sm text-slate-600">
-            Generated content will appear here.
-          </div>
-        }
-
-        @if (error()) {
-          <p class="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{{ error() }}</p>
-        }
-        @if (success()) {
-          <p class="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{{ success() }}</p>
-        }
-      </div>
     </section>
-  `
+  `,
 })
 export class GeneratorPageComponent {
   private readonly coverLetterService = inject(CoverLetterService);
@@ -74,7 +111,7 @@ export class GeneratorPageComponent {
       error: (err: { error?: { message?: string } }) => {
         this.error.set(err.error?.message ?? 'Failed to generate cover letter');
         this.loading.set(false);
-      }
+      },
     });
   }
 
@@ -94,6 +131,10 @@ export class GeneratorPageComponent {
     this.success.set('Download started');
   }
 
+  showRegeneratePlaceholder(): void {
+    this.success.set('Regenerate variations will be available soon');
+  }
+
   saveLetter(): void {
     const payload = this.latestPayload();
 
@@ -104,7 +145,7 @@ export class GeneratorPageComponent {
 
     const savePayload: SaveCoverLetterPayload = {
       ...payload,
-      generatedText: this.generatedText()
+      generatedText: this.generatedText(),
     };
 
     this.coverLetterService.save(savePayload).subscribe({
@@ -114,7 +155,7 @@ export class GeneratorPageComponent {
       },
       error: (err: { error?: { message?: string } }) => {
         this.error.set(err.error?.message ?? 'Failed to save cover letter');
-      }
+      },
     });
   }
 }
